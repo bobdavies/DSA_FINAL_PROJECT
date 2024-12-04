@@ -1,0 +1,391 @@
+===========================================
+TOWER OF HANOI - DETAILED IMPLEMENTATION EXPLANATION
+===========================================
+
+This document provides a detailed explanation of every component of the Tower of Hanoi implementation.
+
+1. STACK IMPLEMENTATION (stack.py)
+=================================
+
+The Stack class is fundamental to our Tower of Hanoi implementation. Each tower (rod) is represented by a stack.
+
+1.1 Class Constructor
+-------------------
+```python
+def __init__(self, size, name):
+    self.size = size
+    self.stack = [None] * size
+    self.top = -1
+    self.name = name
+```
+EXPLANATION:
+- size: Maximum number of disks the stack can hold
+- stack: Array to store the disks, initialized with None values
+- top: Index pointing to the topmost disk (-1 means empty)
+- name: Identifier for the stack (A, B, or C for the three rods)
+
+1.2 Stack Operations
+------------------
+
+a) Push Operation
+```python
+def push(self, item):
+    if self.is_full():
+        raise Exception("Stack Overflow")
+    self.top += 1
+    self.stack[self.top] = item
+```
+EXPLANATION:
+- Checks if stack is full before pushing
+- Increments top pointer
+- Places item at the new top position
+- Raises exception if stack is full
+
+b) Pop Operation
+```python
+def pop(self):
+    if self.is_empty():
+        raise Exception("Stack Underflow")
+    item = self.stack[self.top]
+    self.top -= 1
+    return item
+```
+EXPLANATION:
+- Checks if stack is empty before popping
+- Retrieves item from top
+- Decrements top pointer
+- Returns the removed item
+- Raises exception if stack is empty
+
+c) Helper Methods
+```python
+def is_empty(self):
+    return self.top == -1
+
+def is_full(self):
+    return self.top == self.size - 1
+
+def get_items(self):
+    return self.stack[:self.top + 1]
+```
+EXPLANATION:
+- is_empty: Checks if no disks are present
+- is_full: Checks if stack has reached maximum capacity
+- get_items: Returns current stack contents for display
+
+2. TOWER OF HANOI IMPLEMENTATION (tower_of_hanoi.py)
+==================================================
+
+2.1 Class Constructor
+-------------------
+```python
+def __init__(self, num_disks):
+    self.num_disks = num_disks
+    self.moves = 0
+    self.source = Stack(num_disks, "A")
+    self.spare = Stack(num_disks, "B")
+    self.target = Stack(num_disks, "C")
+    
+    for disk in range(num_disks, 0, -1):
+        self.source.push(disk)
+```
+EXPLANATION:
+- Initializes three stacks for source, spare, and target rods
+- num_disks: Total number of disks to solve for
+- moves: Counter for number of moves made
+- Populates source stack with disks (larger numbers = bigger disks)
+
+2.2 Move Disk Operation
+---------------------
+```python
+def move_disk(self, source, target):
+    disk = source.pop()
+    target.push(disk)
+    self.moves += 1
+    print(f"Move disk {disk} from {source.name} to {target.name}")
+    self.display_state()
+```
+EXPLANATION:
+- Handles single disk movement between towers
+- Removes disk from source tower
+- Places disk on target tower
+- Increments move counter
+- Displays the move and updated state
+
+2.3 Recursive Solution
+--------------------
+```python
+def solve(self, n=None, source=None, target=None, spare=None):
+    if n is None:
+        n = self.num_disks
+        source = self.source
+        target = self.target
+        spare = self.spare
+        print(f"\nSolving Tower of Hanoi with {self.num_disks} disks")
+        print("Initial state:")
+        self.display_state()
+
+    if n == 1:
+        self.move_disk(source, target)
+    else:
+        self.solve(n - 1, source, spare, target)
+        self.move_disk(source, target)
+        self.solve(n - 1, spare, target, source)
+```
+EXPLANATION:
+- Base case (n=1): Move single disk directly to target
+- Recursive case:
+  1. Move n-1 disks to spare rod
+  2. Move largest disk to target rod
+  3. Move n-1 disks from spare to target
+- First call initializes default parameters
+
+2.4 Visual Display
+----------------
+```python
+def display_state(self):
+    source_disks = self.source.get_items()
+    spare_disks = self.spare.get_items()
+    target_disks = self.target.get_items()
+    
+    max_height = self.num_disks
+    source_disks = ['|'] * (max_height - len(source_disks)) + source_disks[::-1]
+    spare_disks = ['|'] * (max_height - len(spare_disks)) + spare_disks[::-1]
+    target_disks = ['|'] * (max_height - len(target_disks)) + target_disks[::-1]
+```
+EXPLANATION:
+- Gets current state of all three towers
+- Pads shorter stacks with '|' for empty spaces
+- Reverses lists to display larger disks at bottom
+- Creates visual representation using '=' for disks
+
+3. ALGORITHMIC COMPLEXITY
+========================
+
+Time Complexity: O(2^n)
+----------------------
+- Each disk doubles the number of moves needed
+- For n disks, requires (2^n - 1) moves
+- Example:
+  * 1 disk: 1 move
+  * 2 disks: 3 moves
+  * 3 disks: 7 moves
+  * 4 disks: 15 moves
+
+Space Complexity: O(n)
+---------------------
+- Recursive call stack depth is proportional to number of disks
+- Each stack stores at most n disks
+- Total space needed grows linearly with n
+
+4. COMMON QUESTIONS AND ANSWERS
+==============================
+
+Q: Why use a stack data structure?
+A: Stacks naturally enforce the "larger disk below smaller disk" rule and match the LIFO (Last In, First Out) nature of the puzzle.
+
+Q: How does the recursive solution work?
+A: It breaks down the problem into smaller sub-problems:
+1. Move n-1 disks out of the way
+2. Move the largest disk to its final position
+3. Move the n-1 disks back on top
+This pattern repeats until dealing with just one disk.
+
+Q: Why is the time complexity O(2^n)?
+A: Each additional disk doubles the work:
+- Moving n disks requires moving n-1 disks twice
+- Plus one move for the nth disk
+- This leads to the formula: T(n) = 2T(n-1) + 1
+- Solves to T(n) = 2^n - 1
+
+Q: How does the visual display work?
+A: It creates a text-based representation where:
+- Vertical bars '|' show empty spaces
+- Equal signs '=' show disks (more = for larger disks)
+- Display is updated after each move
+- Larger numbers mean wider disks
+
+5. TESTING AND EDGE CASES
+=========================
+
+The implementation handles several edge cases:
+
+1. Input Validation:
+   - Negative numbers
+   - Zero disks
+   - Non-integer inputs
+
+2. Stack Operations:
+   - Stack overflow (trying to add to full stack)
+   - Stack underflow (trying to remove from empty stack)
+   - Disk size ordering violations
+
+6. PSEUDOCODE IMPLEMENTATION
+===========================
+
+Here's the pseudocode for the complete Tower of Hanoi solution:
+
+A) Stack Operations Pseudocode
+----------------------------
+
+PROCEDURE Stack.Push(item):
+    IF stack is full THEN
+        RAISE error "Stack Overflow"
+    END IF
+    increment top by 1
+    stack[top] = item
+END PROCEDURE
+
+PROCEDURE Stack.Pop():
+    IF stack is empty THEN
+        RAISE error "Stack Underflow"
+    END IF
+    item = stack[top]
+    decrement top by 1
+    RETURN item
+END PROCEDURE
+
+B) Main Tower of Hanoi Recursive Algorithm
+----------------------------------------
+
+PROCEDURE TowerOfHanoi(n, source, target, spare):
+    // Base case: only one disk to move
+    IF n = 1 THEN
+        MoveDisk(source, target)
+        RETURN
+    END IF
+    
+    // Move n-1 disks from source to spare using target as temporary
+    TowerOfHanoi(n-1, source, spare, target)
+    
+    // Move the largest disk from source to target
+    MoveDisk(source, target)
+    
+    // Move n-1 disks from spare to target using source as temporary
+    TowerOfHanoi(n-1, spare, target, source)
+END PROCEDURE
+
+C) Disk Movement Procedure
+------------------------
+
+PROCEDURE MoveDisk(source, target):
+    disk = source.Pop()
+    target.Push(disk)
+    increment moves counter
+    display current state
+END PROCEDURE
+
+D) Initialization Procedure
+-------------------------
+
+PROCEDURE Initialize(num_disks):
+    CREATE source_stack with size num_disks
+    CREATE spare_stack with size num_disks
+    CREATE target_stack with size num_disks
+    
+    // Place disks on source stack (larger disks first)
+    FOR disk FROM num_disks DOWNTO 1 DO
+        source_stack.Push(disk)
+    END FOR
+END PROCEDURE
+
+E) Display State Procedure
+------------------------
+
+PROCEDURE DisplayState():
+    // Get current state of all stacks
+    source_disks = source_stack.GetItems()
+    spare_disks = spare_stack.GetItems()
+    target_disks = target_stack.GetItems()
+    
+    // Pad with empty spaces and reverse for display
+    FOR each_stack IN [source_disks, spare_disks, target_disks] DO
+        pad_stack with empty spaces to max_height
+        reverse stack order
+    END FOR
+    
+    // Display each level
+    FOR level FROM 0 TO max_height-1 DO
+        display formatted row showing all three stacks
+    END FOR
+    
+    // Display base and labels
+    display tower bases
+    display tower labels (A, B, C)
+END PROCEDURE
+
+F) Main Program Flow
+------------------
+
+PROCEDURE Main():
+    INPUT num_disks
+    WHILE num_disks is not valid DO
+        DISPLAY "Please enter a valid positive integer"
+        INPUT num_disks
+    END WHILE
+    
+    Initialize(num_disks)
+    DisplayState()  // Show initial state
+    TowerOfHanoi(num_disks, source_stack, target_stack, spare_stack)
+    DISPLAY "Puzzle solved in " + moves + " moves"
+    DISPLAY "Minimum possible moves: " + (2^num_disks - 1)
+END PROCEDURE
+
+G) Error Handling Pseudocode
+--------------------------
+
+PROCEDURE ValidateInput(input):
+    IF input is not an integer THEN
+        RAISE error "Invalid input type"
+    END IF
+    
+    IF input <= 0 THEN
+        RAISE error "Number must be positive"
+    END IF
+END PROCEDURE
+
+PROCEDURE ValidateDiskMovement(source, target):
+    IF source is empty THEN
+        RAISE error "Cannot move from empty stack"
+    END IF
+    
+    IF target is not empty AND
+       source.peek() > target.peek() THEN
+        RAISE error "Cannot place larger disk on smaller disk"
+    END IF
+END PROCEDURE
+
+This pseudocode demonstrates:
+1. Clear separation of concerns
+2. Recursive algorithm structure
+3. Error handling procedures
+4. Input validation
+5. Visual display logic
+6. Stack operations
+
+The actual implementation follows this pseudocode structure while adding:
+- Specific data structures
+- Programming language syntax
+- Detailed error messages
+- Memory management
+- Performance optimizations
+
+7. OPTIMIZATION CONSIDERATIONS
+============================
+
+While this implementation is correct and educational, potential optimizations include:
+
+1. Iterative Solution:
+   - Could reduce stack memory usage
+   - Might be faster for very large n
+
+2. Move Pattern:
+   - For odd n: moves alternate between adjacent towers
+   - For even n: moves alternate between non-adjacent towers
+   - This pattern could be used for an optimized iterative solution
+
+3. Memory Usage:
+   - Could use binary numbers to track disk positions
+   - Could represent stacks more compactly
+
+Remember: The beauty of this problem is how it demonstrates recursive problem-solving and how a complex task can be broken down into simple, repeated steps.
