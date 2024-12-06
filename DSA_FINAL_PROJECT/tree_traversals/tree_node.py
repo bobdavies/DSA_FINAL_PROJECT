@@ -34,42 +34,28 @@ class TreeNode:
         self.left = None
         self.right = None
     
-    def insert_left(self, value):
+    def insert_left(self, child):
         """
         Insert a left child node.
         
         Args:
-            value: Either a value to create a new node with, or an existing TreeNode
-        
-        Returns:
-            TreeNode: The inserted left child node
-        
-        Example:
-            node = TreeNode(5)
-            left_child = node.insert_left(3)
+            child: TreeNode to be inserted as the left child
         """
-        if isinstance(value, TreeNode):
-            self.left = value
+        if self.left is None:
+            self.left = child
         else:
-            self.left = TreeNode(value)
-        return self.left
-    
-    def insert_right(self, value):
+            child.left = self.left
+            self.left = child
+            
+    def insert_right(self, child):
         """
         Insert a right child node.
         
         Args:
-            value: Either a value to create a new node with, or an existing TreeNode
-        
-        Returns:
-            TreeNode: The inserted right child node
-        
-        Example:
-            node = TreeNode(5)
-            right_child = node.insert_right(7)
+            child: TreeNode to be inserted as the right child
         """
-        if isinstance(value, TreeNode):
-            self.right = value
+        if self.right is None:
+            self.right = child
         else:
-            self.right = TreeNode(value)
-        return self.right
+            child.right = self.right
+            self.right = child
